@@ -2,7 +2,7 @@ import React,{ useState}  from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../authSlice';
 import { useNavigate} from 'react-router-dom';
-
+import axios from 'axios';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -23,7 +23,12 @@ const Home = () => {
     navigate('/');
   };
 
-  const handleInsert = () => {
+  const clear = () => {
+    setMessage('')
+  };
+
+  const handleInsert = (event) => {
+    event.preventDefault();
     axios.post('http://localhost:8090/insert', {
           name: name,
           userid: userid,
@@ -31,12 +36,16 @@ const Home = () => {
           age: age
         }, {
           headers: {
-            'Authorization': `Bearer ${token}` 
+            'Authorization': `${token}` 
           }
   })
         .then(response => {
           if(response.data['statusCode']==200){
             setMessage('insertion successful')
+            setName('');
+            setId('');
+            setEmail('');
+            setAge('');
             alert('success')
           }
           else{
@@ -48,13 +57,22 @@ const Home = () => {
         });
   };
 
-  const handleDelete = () => {
+  const handleDelete = (event) => {
+    event.preventDefault();
     axios.post('http://localhost:8090/delete', {
-          email: email,
-          password: password
-        })
+          email: email
+        }, {
+          headers: {
+            'Authorization': `${token}` 
+          }
+  })
         .then(response => {
           if(response.data['statusCode']==200){
+            setMessage('deletion successful')
+            setName('');
+            setId('');
+            setEmail('');
+            setAge('');
             alert('success')
           }
           else{
@@ -66,13 +84,25 @@ const Home = () => {
         });
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = (event) => {
+    event.preventDefault();
     axios.post('http://localhost:8090/update', {
-          email: email,
-          password: password
-        })
+      name: name,
+      userid: userid,
+      email: email,
+      age: age
+    }, {
+      headers: {
+        'Authorization': `${token}` 
+      }
+})
         .then(response => {
           if(response.data['statusCode']==200){
+            setMessage('updation successful')
+            setName('');
+            setId('');
+            setEmail('');
+            setAge('');
             alert('success')
           }
           else{
@@ -84,13 +114,22 @@ const Home = () => {
         });
   };
 
-  const handleRead = () => {
+  const handleRead = (event) => {
+    event.preventDefault();
     axios.post('http://localhost:8090/read', {
-          email: email,
-          password: password
-        })
+          email: email
+        }, {
+          headers: {
+            'Authorization': `${token}` 
+          }
+    })
         .then(response => {
           if(response.data['statusCode']==200){
+            setMessage(response.data['body'])
+            setName('');
+            setId('');
+            setEmail('');
+            setAge('');
             alert('success')
           }
           else{
@@ -105,32 +144,35 @@ const Home = () => {
 return (
     <div>
       <p>Welcome, {user?.email}!</p>
+      <h2>{mode}</h2> 
       <div>
         <p>{message}</p>
       </div>
       <div>
-        <button onClick={() => setMode('insert')}>Insert</button>
-        <button onClick={() => setMode('delete')}>Delete</button>
-        <button onClick={() => setMode('update')}>Update</button>
-        <button onClick={() => setMode('read')}>Read</button>
+        <button onClick={() => {setMode('insert'); clear()}}>Insert</button>
+        <button onClick={() => {setMode('delete'); clear()}}>Delete</button>
+        <button onClick={() => {setMode('update'); clear()}}>Update</button>
+        <button onClick={() => {setMode('read'); clear()}}>Read</button>
       </div>
+      <br />
       <div>
         {mode === 'insert' ? (
             <div>
+              <br />
                 <form className="form" onSubmit={handleInsert}>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Name" onChange={(e) => setName(e.target.value)}/>
+                    <input type="text" className="form-control" value={name} placeholder="Name" onChange={(e) => setName(e.target.value)}/>
                     </div>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Userid" onChange={(e) => setId(e.target.value)}/>
+                    <input type="text" className="form-control" value={userid} placeholder="Userid" onChange={(e) => setId(e.target.value)}/>
                     </div>
                     <div className="input-box">
-                    <input type="email" className="form-control" placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
+                    <input type="email" className="form-control" value={email} placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
                     </div>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Age" onChange={(e) => setAge(e.target.value)}/>
+                    <input type="text" className="form-control" value={age} placeholder="Age" onChange={(e) => setAge(e.target.value)}/>
                     </div>
-                
+                    <br />
                     <button type="submit">Submit</button>
                 </form>
             </div>
@@ -138,9 +180,9 @@ return (
             <div>
                 <form className="form" onSubmit={handleDelete}>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Userid" onChange={(e) => setId(e.target.value)}/>
+                    <input type="email" className="form-control" value={email} placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
                     </div>
-                
+                    <br />
                     <button type="submit">Submit</button>
                 </form>
             </div>
@@ -148,18 +190,18 @@ return (
             <div>
                 <form className="form" onSubmit={handleUpdate}>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Name" onChange={(e) => setName(e.target.value)}/>
+                    <input type="email" className="form-control" value={email} placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
                     </div>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Userid" onChange={(e) => setId(e.target.value)}/>
+                    <input type="text" className="form-control" value={name} placeholder="Name" onChange={(e) => setName(e.target.value)}/>
                     </div>
                     <div className="input-box">
-                    <input type="email" className="form-control" placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
+                    <input type="text" className="form-control" value={userid} placeholder="Userid" onChange={(e) => setId(e.target.value)}/>
                     </div>
                     <div className="input-box">
-                    <input type="email" className="form-control" placeholder="Age" onChange={(e) => setAge(e.target.value)}/>
+                    <input type="text" className="form-control" value={age} placeholder="Age" onChange={(e) => setAge(e.target.value)}/>
                     </div>
-                
+                    <br />
                     <button type="submit">Submit</button>
                 </form>
             </div>
@@ -167,9 +209,9 @@ return (
             <div>
                 <form className="form" onSubmit={handleRead}>
                     <div className="input-box">
-                    <input type="text" className="form-control" placeholder="Userid" onChange={(e) => setId(e.target.value)}/>
+                    <input type="email" className="form-control" value={email} placeholder="Email" onChange={(e) => setEmail(e.target.value)}/>
                     </div>
-                
+                    <br />
                     <button type="submit">Submit</button>
                 </form>
             </div>
@@ -177,6 +219,7 @@ return (
             <div>Unknown mode</div>
         )}
       </div>
+      <br />
       <button onClick={handleLogout}>Logout</button>
     </div>
   );

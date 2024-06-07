@@ -50,7 +50,7 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = data['username']
+            current_user = data['email']
         except:
             return jsonify({'message': 'Token is invalid!'}), 401
 
@@ -123,7 +123,8 @@ def login():
 
 @app.route('/insert', methods=['POST'])
 @token_required
-def create_user():
+def create_user(current_user):
+    print(request.json) 
     data = request.json
     try:
         user_id = employee_collection.insert_one(data).inserted_id
@@ -140,19 +141,19 @@ def create_user():
 
 @app.route('/read', methods=['POST'])
 @token_required
-def get_user():
+def get_user(current_user):
     data = request.json
+    body=''
     try:
-        user_id=data.get('user_id', '')
-        user = employee_collection.find_one({'user_id': user_id})  
+        email=data.get('email', '')
+        user = employee_collection.find_one({'email': email})  
         if user:
             statuscode=200
             message='read'
-            body=user
+            body=str(user)
         else:
             statuscode=500
             message='id not found'
-            body={}
     except Exception as e:
         statuscode=500
         message='failed'
@@ -165,12 +166,14 @@ def get_user():
 
 @app.route('/update', methods=['POST']) 
 @token_required
-def update_user():
+def update_user(current_user):
     data = request.json
     try:
-        user_id=data.get('user_id', '')
         email=data.get('email', '')
-        result = employee_collection.update_one({'user_id': user_id}, {'$set': {'email': email}}) 
+        userid=data.get('userid', '')
+        age=data.get('age', '')
+        name=data.get('name', '')
+        result = employee_collection.update_one({'email': email}, {'$set': {'userid': userid, 'age':age, 'name':name}}) 
         if result.modified_count > 0:
             statuscode=200
             message='updated'
@@ -189,11 +192,11 @@ def update_user():
  
 @app.route('/delete', methods=['POST'])
 @token_required
-def delete_user():
+def delete_user(current_user):
     data = request.json
     try:
-        user_id=data.get('user_id', '')
-        result = employee_collection.delete_one({'user_id': user_id}) 
+        email=data.get('email', '')
+        result = employee_collection.delete_one({'email': email}) 
 
         if result.deleted_count > 0:
             statuscode=200
